@@ -1,132 +1,32 @@
-{% extends "base.html" %}
-{% block title %}Step-Bending{% endblock %}
-{% block content %}
-<p class="brand">-HrinovaSoft-</p>
-<h1>Step-Bending kalkulačka</h1>
-<p class="subtitle">Výpočet kroku ohybu, počtu ohybov a uhla na jeden úder podľa dĺžky plechu v rozvinutom stave a matrice.</p>
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulačka Ohýbania</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; padding: 20px; }
+        .box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        .vysledok { margin-top: 20px; padding: 15px; background: #e2f3e5; color: #2e7d32; font-weight: bold; border-radius: 8px; font-size: 20px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Step Bending</h2>
+        <form method="POST">
+            <input type="number" step="any" name="hrubka" placeholder="Hrúbka plechu (mm)" required>
+            <input type="number" step="any" name="polomer" placeholder="Polomer (R)" required>
+            <input type="number" step="any" name="uhol" placeholder="Uhol ohybu (°)" required>
+            <button type="submit">VYPOČÍTAŤ</button>
+        </form>
 
-<form method="post" action="/" class="card">
-    <h2 class="card-heading">Vstupná tabuľka</h2>
-    <div class="form-row">
-        <label for="job_name">Názov zákazky</label>
-        <input type="text" id="job_name" name="job_name" placeholder="napr. Projekt 123" value="{{ request.form.job_name if request.form else '' }}" required>
+        {% if vysledok %}
+            <div class="vysledok">
+                Výsledok: {{ vysledok }} mm
+            </div>
+        {% endif %}
     </div>
-    <div class="form-row">
-        <label for="arc_length">Dĺžka plechu v rozvinutom stave (L) <span class="unit">mm</span></label>
-        <input type="number" id="arc_length" name="arc_length" step="0.1" min="0.1" placeholder="dĺžka v rozvinutom stave" value="{{ request.form.arc_length if request.form else '' }}" required>
-    </div>
-    <div class="form-row">
-        <label for="sheet_thickness">Hrúbka plechu (s) <span class="unit">mm</span></label>
-        <input type="number" id="sheet_thickness" name="sheet_thickness" step="0.1" min="0.1" placeholder="napr. 1.5" value="{{ request.form.sheet_thickness if request.form else '' }}" required>
-    </div>
-    <div class="form-row">
-        <label for="sheet_width">Šírka plechu (b) <span class="unit">mm</span></label>
-        <input type="number" id="sheet_width" name="sheet_width" step="0.1" min="0.1" placeholder="šírka ohranovacieho lisu" value="{{ request.form.sheet_width if request.form else '' }}" required>
-    </div>
-    <div class="form-row">
-        <label for="die_size">Veľkosť matrice (V) <span class="unit">mm</span></label>
-        <input type="number" id="die_size" name="die_size" step="0.1" min="0.1" placeholder="šírka drážky spodného nástroja" value="{{ request.form.die_size if request.form else '' }}" required>
-    </div>
-    <div class="form-row">
-        <label for="total_angle">Celkový uhol ohnutia <span class="unit">°</span></label>
-        <input type="number" id="total_angle" name="total_angle" step="0.1" min="0.1" max="360" placeholder="napr. 90" value="{{ request.form.total_angle if request.form else '90' }}" required>
-    </div>
-    <div class="form-row">
-        <label for="tensile_strength">Pevnosť materiálu (R<sub>m</sub>) <span class="unit">MPa</span></label>
-        <input type="number" id="tensile_strength" name="tensile_strength" step="1" min="1" placeholder="napr. 420 (bežná oceľ)" value="{{ request.form.tensile_strength if request.form else '420' }}" required>
-    </div>
-    <button type="submit">Vypočítať</button>
-</form>
-
-{% if result %}
-<div class="card card-results">
-    <h2 class="card-heading">Výstupná tabuľka</h2>
-    <div class="result-grid">
-        <div class="result-item">
-            <span class="result-label">Krok ohybu (P)</span>
-            <span class="result-value">{{ result.pitch_mm }}<span class="result-unit">mm</span></span>
-        </div>
-        <div class="result-item">
-            <span class="result-label">Počet ohybov (n)</span>
-            <span class="result-value">{{ result.num_bends }}</span>
-        </div>
-        <div class="result-item result-item-highlight">
-            <span class="result-label">Uhol ohybu na jeden úder</span>
-            <span class="result-value result-value-angle">Nastaviť na lise {{ result.angle_per_stroke_deg }}°</span>
-        </div>
-        <div class="result-item {% if result.force_over_100 %}result-item-warning{% endif %}">
-            <span class="result-label">Potrebná sila lisu</span>
-            <span class="result-value {% if result.force_over_100 %}result-value-warning{% endif %}">{{ result.force_tons }}<span class="result-unit">t</span></span>
-        </div>
-    </div>
-    <p class="result-hint">Vzorec: P = (V/2) + 1, n = L/P zaokrúhlené nahor, uhol = celkový uhol / n. Silа: F = (1.42·R<sub>m</sub>·s²·b)/(V·1000) t.</p>
-
-    <form method="post" action="{{ url_for('report') }}" class="pdf-form">
-        <input type="hidden" name="job_name" value="{{ request.form.job_name }}">
-        <input type="hidden" name="arc_length" value="{{ request.form.arc_length }}">
-        <input type="hidden" name="sheet_thickness" value="{{ request.form.sheet_thickness }}">
-        <input type="hidden" name="sheet_width" value="{{ request.form.sheet_width }}">
-        <input type="hidden" name="die_size" value="{{ request.form.die_size }}">
-        <input type="hidden" name="total_angle" value="{{ request.form.total_angle }}">
-        <input type="hidden" name="tensile_strength" value="{{ request.form.tensile_strength }}">
-        <button type="submit" class="btn-report">GENEROVAŤ PDF REPORT</button>
-    </form>
-
-    <h3 class="table-heading">Detail ohybov</h3>
-    <div class="table-wrap">
-        <table class="bend-table">
-            <thead>
-                <tr>
-                    <th>Ohyb č.</th>
-                    <th>Uhol na lise</th>
-                    <th>Kumulatívna poloha dorazu (mm)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in result.bend_rows %}
-                <tr>
-                    <td>{{ row.bend_num }}</td>
-                    <td>Nastaviť na lise {{ result.angle_per_stroke_deg }}°</td>
-                    <td>{{ row.cumulative_position_mm }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-{% endif %}
-
-{% if history %}
-<div class="card history-card">
-    <h2 class="card-heading">HISTÓRIA SYSTÉMU</h2>
-    <div class="table-wrap">
-        <table class="bend-table history-table">
-            <thead>
-                <tr>
-                    <th>Meno</th>
-                    <th>Dátum</th>
-                    <th>Hrúbka (s)</th>
-                    <th>Uhol (°)</th>
-                    <th>Akcia</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for h in history %}
-                <tr>
-                    <td>{{ h.job_name }}</td>
-                    <td>{{ h.created_at }}</td>
-                    <td>{{ h.sheet_thickness_mm }}</td>
-                    <td>{{ h.total_angle_deg }}</td>
-                    <td>
-                        <form method="post" action="{{ url_for('delete_calculation', calc_id=h.id) }}" class="form-delete">
-                            <button type="submit" class="btn-delete" title="Zmazať záznam">Zmazať</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-{% endif %}
-{% endblock %}
+</body>
+</html>

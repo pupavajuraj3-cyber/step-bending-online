@@ -3,29 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulačka Ohýbania</title>
+    <title>Step Bending Pro</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; padding: 20px; }
-        .box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
-        .vysledok { margin-top: 20px; padding: 15px; background: #e2f3e5; color: #2e7d32; font-weight: bold; border-radius: 8px; font-size: 20px; }
+        body { background-color: #0a0a0a; color: #00ff00; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .container { background: #1a1a1a; border: 2px solid #00ff00; padding: 30px; border-radius: 5px; box-shadow: 0 0 20px rgba(0,255,0,0.2); width: 100%; max-width: 450px; }
+        h1 { text-align: center; font-size: 1.5em; border-bottom: 2px solid #00ff00; padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; }
+        .input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        label { font-size: 0.9em; flex: 1; }
+        input { background: #000; border: 1px solid #00ff00; color: #00ff00; padding: 8px; width: 100px; text-align: right; border-radius: 3px; }
+        button { width: 100%; padding: 15px; background: #00ff00; color: #000; border: none; font-weight: bold; cursor: pointer; font-size: 1.1em; margin-top: 20px; }
+        .results { margin-top: 25px; border-top: 1px solid #444; padding-top: 20px; }
+        .res-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1em; }
+        .val { font-weight: bold; color: #fff; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>Step Bending</h2>
+    <div class="container">
+        <h1>Step Bending Calculator</h1>
         <form method="POST">
-            <input type="number" step="any" name="hrubka" placeholder="Hrúbka plechu (mm)" required>
-            <input type="number" step="any" name="polomer" placeholder="Polomer (R)" required>
-            <input type="number" step="any" name="uhol" placeholder="Uhol ohybu (°)" required>
-            <button type="submit">VYPOČÍTAŤ</button>
+            <div class="input-row">
+                <label>Hrúbka plechu (mm):</label>
+                <input type="number" step="any" name="hrubka" required>
+            </div>
+            <div class="input-row">
+                <label>Vnútorný polomer R (mm):</label>
+                <input type="number" step="any" name="polomer" required>
+            </div>
+            <div class="input-row">
+                <label>Celkový uhol ohybu (°):</label>
+                <input type="number" step="any" name="uhol" required>
+            </div>
+            <div class="input-row">
+                <label>Počet krokov (n):</label>
+                <input type="number" name="pocet_krokov" required>
+            </div>
+            <button type="submit">VYPOČÍTAŤ PARAMETRE</button>
         </form>
 
-        {% if vysledok %}
-            <div class="vysledok">
-                Výsledok: {{ vysledok }} mm
+        {% if vysledok and vysledok is mapping %}
+            <div class="results">
+                <div class="res-item"><span>Dĺžka oblúka:</span> <span class="val">{{ vysledok.dlzka }} mm</span></div>
+                <div class="res-item"><span>Posuv (Step):</span> <span class="val">{{ vysledok.posuv }} mm</span></div>
+                <div class="res-item"><span>Uhol jedného kroku:</span> <span class="val">{{ vysledok.uhol_kroku }} °</span></div>
             </div>
+        {% elif vysledok %}
+            <p style="color: red;">{{ vysledok }}</p>
         {% endif %}
     </div>
 </body>

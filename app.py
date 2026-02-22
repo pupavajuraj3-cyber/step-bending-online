@@ -9,13 +9,11 @@ def index():
     vysledok = None
     if request.method == 'POST':
         try:
-            # Načítanie údajov z tvojich políčok
             hrubka = float(request.form.get('hrubka', 0))
             polomer = float(request.form.get('polomer', 0))
             uhol = float(request.form.get('uhol', 0))
             pocet_krokov = int(request.form.get('pocet_krokov', 1))
 
-            # Výpočet (rovnaký ako si mal v laptope)
             dlzka_obluka = (math.pi * (polomer + hrubka/2) * uhol) / 180
             posuv = dlzka_obluka / pocet_krokov
             

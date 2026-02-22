@@ -8,14 +8,19 @@ def index():
     vysledok = None
     if request.method == 'POST':
         try:
+            # Načítanie hodnôt z tvojich políčok
             hrubka = float(request.form.get('hrubka', 0))
             polomer = float(request.form.get('polomer', 0))
             uhol = float(request.form.get('uhol', 0))
+            
+            # Výpočet: (Hrúbka + Polomer) * (Uhol / 90)
             vysledok = round((hrubka + polomer) * (uhol / 90), 2)
         except:
             vysledok = "Chyba: Zadaj čísla!"
+            
     return render_template('index.html', vysledok=vysledok)
 
 if __name__ == '__main__':
+    # Nastavenie portu pre Render
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
